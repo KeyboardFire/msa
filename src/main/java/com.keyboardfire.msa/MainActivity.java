@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.Calendar;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 
 import com.google.gson.Gson;
 
@@ -174,7 +175,7 @@ public class MainActivity extends Activity
 
                 TextView due = new TextView(MainActivity.this);
                 String[] parts = a.date_due.split("/");
-                due.setText(String.format("%02d-%02d",
+                due.setText(String.format(Locale.US, "%02d-%02d",
                             Integer.parseInt(parts[0]),
                             Integer.parseInt(parts[1])));
                 due.setPadding(MainActivity.PADDING, 0, MainActivity.PADDING, 0);

@@ -2,4 +2,7 @@
 
 <resources>
     <string name="app_name">MSA</string>
+    <string name="login_title">Login</string>
+    <string name="login_username_label">Username</string>
+    <string name="login_password_label">Password</string>
 </resources>

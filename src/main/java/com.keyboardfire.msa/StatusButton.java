@@ -1,6 +1,6 @@
 package com.keyboardfire.msa;
 
-import android.widget.TextView;
+import android.support.v7.widget.AppCompatTextView;
 import android.content.Context;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -8,7 +8,7 @@ import android.view.MotionEvent;
 import android.view.Gravity;
 import android.os.AsyncTask;
 
-public class StatusButton extends TextView {
+public class StatusButton extends AppCompatTextView {
 
     int id, status;
     static int size;
