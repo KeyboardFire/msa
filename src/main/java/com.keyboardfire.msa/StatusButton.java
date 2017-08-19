@@ -11,13 +11,14 @@ import android.os.AsyncTask;
 public class StatusButton extends TextView {
 
     int id, status;
-    final static int SIZE = 125;
+    static int size;
 
     public StatusButton(Context context, int id, int status) {
         super(context);
         this.id = id;
         setGravity(Gravity.CENTER);
         setStatus(status, false);
+        size = getResources().getDimensionPixelSize(R.dimen.buttonsize);
     }
 
     private void setStatus(int status, boolean updateServer) {
@@ -64,14 +65,14 @@ public class StatusButton extends TextView {
     }
 
     @Override protected void onMeasure(int wms, int hms) {
-        setMeasuredDimension(StatusButton.SIZE, StatusButton.SIZE);
+        setMeasuredDimension(size, size);
     }
 
     @Override public boolean onTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_UP) {
             if (ev.getX() < 0) {
                 setStatus((status - 2) % 3 + 1, true);
-            } else if (ev.getY() >= 0 && ev.getY() <= StatusButton.SIZE) {
+            } else if (ev.getY() >= 0 && ev.getY() <= size) {
                 setStatus((status + 2) % 3 - 1, true);
             }
         }
