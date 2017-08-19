@@ -1,5 +1,6 @@
 package com.keyboardfire.msa;
 
+import android.text.Html;
 import android.app.Activity;
 import android.widget.TextView;
 import android.widget.TableLayout;
@@ -169,7 +170,7 @@ public class MainActivity extends Activity
                 tr.addView(classId);
 
                 TextView desc = new TextView(MainActivity.this);
-                desc.setText(a.short_description);
+                desc.setText(Html.fromHtml(a.short_description));
                 desc.setPadding(MainActivity.PADDING, 0, MainActivity.PADDING, 0);
                 tr.addView(desc);
 
