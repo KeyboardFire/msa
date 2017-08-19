@@ -20,9 +20,6 @@ import android.os.StrictMode;
 public class Net {
 
     public static void setup() {
-        StrictMode.setThreadPolicy(
-                new StrictMode.ThreadPolicy.Builder().permitAll().build());
-
         CookieManager cookieManager =
             new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(cookieManager);
