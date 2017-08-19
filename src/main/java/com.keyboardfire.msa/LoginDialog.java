@@ -11,6 +11,8 @@ import android.widget.TextView;
 public class LoginDialog extends DialogFragment
     implements DialogInterface.OnClickListener {
 
+    // https://possiblemobile.com/2013/05/layout-inflation-as-intended/
+    @android.annotation.SuppressLint("InflateParams")
     @Override public Dialog onCreateDialog(Bundle state) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         View view = getActivity().getLayoutInflater()

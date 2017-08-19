@@ -1,6 +1,7 @@
 package com.keyboardfire.msa;
 
 import android.text.Html;
+import android.text.Spanned;
 import android.app.Activity;
 import android.widget.TextView;
 import android.widget.TableLayout;
@@ -11,6 +12,7 @@ import android.view.Window;
 import android.view.Gravity;
 import android.os.Bundle;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.graphics.Typeface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -133,6 +135,15 @@ public class MainActivity extends Activity
         return ContextCompat.getColor(MainActivity.this, id);
     }
 
+    @SuppressWarnings("deprecation")
+    private Spanned fromHtml(String s) {
+        if (Build.VERSION.SDK_INT >= 24) {
+            return Html.fromHtml(s, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(s);
+        }
+    }
+
     private class GetAssignmentsTask extends AsyncTask<Void, Void, Assignment[]> {
 
         @Override protected void onPreExecute() {
@@ -182,7 +193,7 @@ public class MainActivity extends Activity
                 TextView desc = new TextView(MainActivity.this);
                 desc.setOnClickListener(new DescClickListener(++index,
                             a.long_description));
-                desc.setText(Html.fromHtml(a.short_description));
+                desc.setText(fromHtml(a.short_description));
                 desc.setPadding(MainActivity.PADDING, 0, MainActivity.PADDING, 0);
                 tr.addView(desc);
 

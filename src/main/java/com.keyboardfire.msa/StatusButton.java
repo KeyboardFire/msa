@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.Gravity;
 import android.os.AsyncTask;
 
+@android.annotation.SuppressLint("ViewConstructor")
 public class StatusButton extends AppCompatTextView {
 
     int id, status;

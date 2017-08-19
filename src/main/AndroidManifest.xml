@@ -4,7 +4,8 @@
     <uses-sdk android:minSdkVersion="16" />
     <application android:label="@string/app_name"
                  android:icon="@drawable/msa"
-                 android:theme="@style/MSATheme">
+                 android:theme="@style/MSATheme"
+                 android:allowBackup="true">
         <activity android:name=".MainActivity"
                   android:label="@string/app_name">
             <intent-filter>

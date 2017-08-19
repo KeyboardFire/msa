@@ -28,7 +28,17 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.1"
 
+    lintOptions {
+        disable "GoogleAppIndexingWarning"
+    }
+
     defaultConfig {
         applicationId "com.keyboardfire.msa"
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
 }
