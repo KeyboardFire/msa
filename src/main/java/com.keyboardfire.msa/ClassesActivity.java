@@ -42,6 +42,11 @@ public class ClassesActivity extends Activity {
             new GetClassesTask().execute();
         } else {
             classes = ClassData.deserialize(classesStr);
+            for (int id : classes.keySet()) {
+                String data = classes.get(id);
+                addClass(id, data.substring(0, data.length() - 2),
+                        data.substring(data.length() - 2));
+            }
         }
     }
 
@@ -52,6 +57,43 @@ public class ClassesActivity extends Activity {
         setResult(Activity.RESULT_OK, res);
         finish();
         //super.onBackPressed();
+    }
+
+    private void addClass(final int id, final String name, String abbr) {
+        TableRow tr = new TableRow(ClassesActivity.this);
+        tr.setGravity(Gravity.CENTER_VERTICAL);
+
+        TextView className = new TextView(ClassesActivity.this);
+        className.setText(name);
+        className.setPadding(MainActivity.PADDING, MainActivity.PADDING,
+                MainActivity.PADDING, MainActivity.PADDING);
+        tr.addView(className);
+
+        EditText classId = new EditText(ClassesActivity.this);
+        classId.setText(abbr);
+        classId.setFilters(
+                new InputFilter[] { new InputFilter.LengthFilter(2) });
+        classId.setSelectAllOnFocus(true);
+        classId.addTextChangedListener(new TextWatcher() {
+            @Override public void afterTextChanged(Editable s) {
+                classes.put(id, name + s +
+                        (s.length() < 2 ? "?" : "") +
+                        (s.length() < 1 ? "?" : ""));
+            }
+
+            @Override public void beforeTextChanged(
+                    CharSequence underscore, int overscore,
+                    int aroundscore, int behindscore) {}
+            @Override public void onTextChanged(
+                    CharSequence underscore, int overscore,
+                    int aroundscore, int behindscore) {}
+        });
+        classId.setTypeface(Typeface.MONOSPACE, Typeface.NORMAL);
+        classId.setPadding(MainActivity.PADDING, MainActivity.PADDING,
+                MainActivity.PADDING, MainActivity.PADDING);
+        tr.addView(classId);
+
+        tl.addView(tr);
     }
 
     private class GetClassesTask extends AsyncTask<Void, Void, ClassData[]> {
@@ -73,41 +115,7 @@ public class ClassesActivity extends Activity {
                 seen.add(name);
 
                 classes.put(c.sectionid, c.sectionidentifier + "??");
-
-                TableRow tr = new TableRow(ClassesActivity.this);
-                tr.setGravity(Gravity.CENTER_VERTICAL);
-
-                TextView className = new TextView(ClassesActivity.this);
-                className.setText(c.sectionidentifier);
-                className.setPadding(MainActivity.PADDING, MainActivity.PADDING,
-                        MainActivity.PADDING, MainActivity.PADDING);
-                tr.addView(className);
-
-                EditText classId = new EditText(ClassesActivity.this);
-                classId.setText("??");
-                classId.setFilters(
-                        new InputFilter[] { new InputFilter.LengthFilter(2) });
-                classId.setSelectAllOnFocus(true);
-                classId.addTextChangedListener(new TextWatcher() {
-                    @Override public void afterTextChanged(Editable s) {
-                        classes.put(c.sectionid, c.sectionidentifier + s +
-                                (s.length() < 2 ? "?" : "") +
-                                (s.length() < 1 ? "?" : ""));
-                    }
-
-                    @Override public void beforeTextChanged(
-                            CharSequence underscore, int overscore,
-                            int aroundscore, int behindscore) {}
-                    @Override public void onTextChanged(
-                            CharSequence underscore, int overscore,
-                            int aroundscore, int behindscore) {}
-                });
-                classId.setTypeface(Typeface.MONOSPACE, Typeface.NORMAL);
-                classId.setPadding(MainActivity.PADDING, MainActivity.PADDING,
-                        MainActivity.PADDING, MainActivity.PADDING);
-                tr.addView(classId);
-
-                tl.addView(tr);
+                addClass(c.sectionid, c.sectionidentifier, "??");
             }
         }
 

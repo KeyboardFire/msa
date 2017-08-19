@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.widget.TextView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.view.View;
 import android.view.Window;
 import android.view.Gravity;
 import android.os.Bundle;
@@ -74,7 +75,6 @@ public class MainActivity extends Activity
     }
 
     @Override public void onRefresh() {
-        tl.removeAllViews();
         new GetAssignmentsTask().execute();
     }
 
@@ -100,6 +100,13 @@ public class MainActivity extends Activity
         return true;
     }
 
+    private void editClasses() {
+        Intent intent = new Intent(MainActivity.this, ClassesActivity.class);
+        intent.putExtra(EXTRA_USERID, userid);
+        intent.putExtra(EXTRA_CLASSES, ClassData.serialize(classes));
+        startActivityForResult(intent, CLASSES_INTENT_CODE);
+    }
+
     @Override public void onActivityResult(int code, int underscore, Intent res) {
         super.onActivityResult(code, underscore, res);
         switch (code) {
@@ -117,14 +124,15 @@ public class MainActivity extends Activity
 
     private class GetAssignmentsTask extends AsyncTask<Void, Void, Assignment[]> {
 
+        @Override protected void onPreExecute() {
+            tl.removeAllViews();
+        }
+
         @Override protected Assignment[] doInBackground(Void... underscore) {
             if (!login()) return null;
 
             if (classes.size() == 0) {
-                Intent intent = new Intent(MainActivity.this, ClassesActivity.class);
-                intent.putExtra(EXTRA_USERID, userid);
-                intent.putExtra(EXTRA_CLASSES, "");
-                startActivityForResult(intent, CLASSES_INTENT_CODE);
+                editClasses();
                 return null;
             }
 
@@ -150,6 +158,11 @@ public class MainActivity extends Activity
                     classes.get(a.section_id) :
                     classes.containsKey(a.section_id + 1) ?
                     classes.get(a.section_id + 1) : "??";
+                classId.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        editClasses();
+                    }
+                });
                 classId.setText(text.substring(text.length() - 2));
                 classId.setTypeface(Typeface.MONOSPACE, Typeface.NORMAL);
                 tr.addView(classId);
