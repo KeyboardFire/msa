@@ -14,6 +14,7 @@
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:shrinkColumns="1"
             android:stretchColumns="1"
             android:id="@+id/main_table">
         </TableLayout>

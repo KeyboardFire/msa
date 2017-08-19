@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.widget.TextView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.webkit.WebView;
 import android.view.View;
 import android.view.Window;
 import android.view.Gravity;
@@ -14,6 +15,7 @@ import android.graphics.Typeface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.content.ContextCompat;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -38,6 +40,9 @@ public class MainActivity extends Activity
 
     TableLayout tl;
     SwipeRefreshLayout srl;
+
+    TableRow longDescRow = null;
+    int longDescIndex = 0;
 
     String creds;
     HashMap<Integer, String> classes;
@@ -124,6 +129,10 @@ public class MainActivity extends Activity
         }
     }
 
+    public int color(int id) {
+        return ContextCompat.getColor(MainActivity.this, id);
+    }
+
     private class GetAssignmentsTask extends AsyncTask<Void, Void, Assignment[]> {
 
         @Override protected void onPreExecute() {
@@ -151,6 +160,7 @@ public class MainActivity extends Activity
 
             Arrays.sort(assignments);
 
+            int index = 0;
             for (final Assignment a : assignments) {
                 TableRow tr = new TableRow(MainActivity.this);
                 tr.setGravity(Gravity.CENTER_VERTICAL);
@@ -170,6 +180,8 @@ public class MainActivity extends Activity
                 tr.addView(classId);
 
                 TextView desc = new TextView(MainActivity.this);
+                desc.setOnClickListener(new DescClickListener(++index,
+                            a.long_description));
                 desc.setText(Html.fromHtml(a.short_description));
                 desc.setPadding(MainActivity.PADDING, 0, MainActivity.PADDING, 0);
                 tr.addView(desc);
@@ -190,6 +202,44 @@ public class MainActivity extends Activity
             }
         }
 
+    }
+
+    private class DescClickListener implements View.OnClickListener {
+        int index;
+        String desc;
+        public DescClickListener(int index, String desc) {
+            this.index = index;
+            this.desc = desc != null && !desc.isEmpty() ? desc :
+                "<i>(no long description)</i>";
+        }
+        @Override public void onClick(View v) {
+            if (longDescRow != null) {
+                tl.removeView(longDescRow);
+                if (longDescIndex == index) {
+                    longDescRow = null;
+                    return;
+                }
+            }
+            longDescRow = new TableRow(MainActivity.this);
+            longDescIndex = index;
+            TextView dummy = new TextView(MainActivity.this);
+            longDescRow.addView(dummy);
+            WebView content = new WebView(MainActivity.this);
+            content.getSettings().setDefaultFontSize(
+                    (int)(dummy.getTextSize() /
+                        getResources().getDisplayMetrics().scaledDensity));
+            content.loadData("<html><head><style>*{color:#d8d8d8}</style></head><body>" +
+                    desc + "</body></html>", "text/html", null);
+            content.setPadding(MainActivity.PADDING, 0, MainActivity.PADDING, 0);
+            content.setBackgroundColor(0);
+            content.setVerticalScrollBarEnabled(false);
+            content.setHorizontalScrollBarEnabled(false);
+            TableRow.LayoutParams params = new TableRow.LayoutParams();
+            params.span = 3;
+            longDescRow.addView(content, 1, params);
+            longDescRow.setBackgroundColor(color(R.color.grey1));
+            tl.addView(longDescRow, index);
+        }
     }
 
 }
