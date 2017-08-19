@@ -182,8 +182,8 @@ public class MainActivity extends Activity
                 due.setPadding(MainActivity.PADDING, 0, MainActivity.PADDING, 0);
                 tr.addView(due);
 
-                StatusButton sb = new StatusButton(MainActivity.this, a.assignment_index_id,
-                        a.assignment_status);
+                StatusButton sb = new StatusButton(MainActivity.this,
+                        a.assignment_index_id, a.assignment_status);
                 tr.addView(sb);
 
                 tl.addView(tr);
