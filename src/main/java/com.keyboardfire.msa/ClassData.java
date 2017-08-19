@@ -32,7 +32,7 @@ public class ClassData {
         for (int key : data.keySet()) {
             s += key + "\u0001" + data.get(key) + "\u0002";
         }
-        return s.substring(0, s.length() - 1);
+        return s.isEmpty() ? s : s.substring(0, s.length() - 1);
     }
 
     public static HashMap<Integer, String> deserialize(String data) {
