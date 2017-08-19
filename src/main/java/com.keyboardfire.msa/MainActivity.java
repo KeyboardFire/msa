@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.os.Bundle;
 import android.os.AsyncTask;
 import android.graphics.Typeface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.widget.SwipeRefreshLayout;
 
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Calendar;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import com.google.gson.Gson;
 
@@ -23,11 +25,19 @@ public class MainActivity extends Activity
     implements SwipeRefreshLayout.OnRefreshListener {
 
     final static int PADDING = 20;
+    public static final String EXTRA_USERID = "com.keyboardfire.msa.USERID";
+    public static final String EXTRA_CLASSES = "com.keyboardfire.msa.CLASSES";
+    static final int CLASSES_INTENT_CODE = 123;
+
+    public static Gson gson;
+
+    int userid;
 
     TableLayout tl;
     SwipeRefreshLayout srl;
 
     String creds;
+    HashMap<Integer, String> classes;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -35,13 +45,15 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
 
         Net.setup();
+        gson = new Gson();
 
         tl = (TableLayout) findViewById(R.id.main_table);
         srl = (SwipeRefreshLayout) findViewById(R.id.srl);
         srl.setOnRefreshListener(this);
 
-        SharedPreferences prefs = getSharedPreferences("credentials", 0);
+        SharedPreferences prefs = getSharedPreferences("data", 0);
         creds = prefs.getString("credentials", null);
+        classes = ClassData.deserialize(prefs.getString("classes", ""));
 
         if (creds == null) {
             new LoginDialog().show(getFragmentManager(), "login");
@@ -53,7 +65,7 @@ public class MainActivity extends Activity
     public void setCredentials(String creds) {
         this.creds = creds;
 
-        SharedPreferences prefs = getSharedPreferences("credentials", 0);
+        SharedPreferences prefs = getSharedPreferences("data", 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("credentials", creds);
         editor.apply();
@@ -66,28 +78,60 @@ public class MainActivity extends Activity
         new GetAssignmentsTask().execute();
     }
 
+    private boolean login() {
+        Pattern p = Pattern.compile("__Ajax.*value=\"([^\"]+)");
+        Matcher m = p.matcher(Net.doGET("https://sjs.myschoolapp.com/app"));
+        if (m.find()) {
+            String token = m.group(1);
+            String postdata = Net.doPOST("https://sjs.myschoolapp.com/api/SignIn", "{\"From\":\"\"," + creds + ",\"remember\":true,\"InterfaceSource\":\"WebApp\"}", token);
+            if (!postdata.contains("LoginSuccessful\":true")) {
+                SharedPreferences prefs = getSharedPreferences("data", 0);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.remove("credentials");
+                editor.apply();
+                new LoginDialog().show(getFragmentManager(), "login");
+                return false;
+            }
+            Pattern p2 = Pattern.compile("CurrentUserForExpired\":(\\d+)");
+            Matcher m2 = p2.matcher(postdata);
+            m2.find();
+            userid = Integer.parseInt(m2.group(1));
+        }
+        return true;
+    }
+
+    @Override public void onActivityResult(int code, int underscore, Intent res) {
+        super.onActivityResult(code, underscore, res);
+        switch (code) {
+            case CLASSES_INTENT_CODE:
+                String classStr = res.getStringExtra(EXTRA_CLASSES);
+                classes = ClassData.deserialize(classStr);
+                SharedPreferences prefs = getSharedPreferences("data", 0);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("classes", classStr);
+                editor.apply();
+                new GetAssignmentsTask().execute();
+                break;
+        }
+    }
+
     private class GetAssignmentsTask extends AsyncTask<Void, Void, Assignment[]> {
 
         @Override protected Assignment[] doInBackground(Void... underscore) {
-            Pattern p = Pattern.compile("__Ajax.*value=\"([^\"]+)");
-            Matcher m = p.matcher(Net.doGET("https://sjs.myschoolapp.com/app"));
-            if (m.find()) {
-                String token = m.group(1);
-                if (!Net.doPOST("https://sjs.myschoolapp.com/api/SignIn", "{\"From\":\"\"," + creds + ",\"remember\":true,\"InterfaceSource\":\"WebApp\"}", token).contains("LoginSuccessful\":true")) {
-                    SharedPreferences prefs = getSharedPreferences("credentials", 0);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.remove("credentials");
-                    editor.apply();
-                    new LoginDialog().show(getFragmentManager(), "login");
-                    return null;
-                }
+            if (!login()) return null;
+
+            if (classes.size() == 0) {
+                Intent intent = new Intent(MainActivity.this, ClassesActivity.class);
+                intent.putExtra(EXTRA_USERID, userid);
+                intent.putExtra(EXTRA_CLASSES, "");
+                startActivityForResult(intent, CLASSES_INTENT_CODE);
+                return null;
             }
 
             Calendar now = Calendar.getInstance();
             String fmt = (now.get(Calendar.MONTH) + 1) + "%2F" +
                 now.get(Calendar.DAY_OF_MONTH) + "%2F" +
                 now.get(Calendar.YEAR);
-            Gson gson = new Gson();
             return gson.fromJson(Net.doGET("https://sjs.myschoolapp.com/api/DataDirect/AssignmentCenterAssignments/?format=json&filter=2&dateStart=" + fmt + "&dateEnd=" + fmt + "&persona=2&statusList=&sectionList="), Assignment[].class);
         }
 
@@ -97,43 +141,16 @@ public class MainActivity extends Activity
 
             Arrays.sort(assignments);
 
-            for (Assignment a : assignments) {
+            for (final Assignment a : assignments) {
                 TableRow tr = new TableRow(MainActivity.this);
                 tr.setGravity(Gravity.CENTER_VERTICAL);
 
                 TextView classId = new TextView(MainActivity.this);
-                switch (a.section_id) {
-                    case 85872226:
-                    case 85872227: // english
-                        classId.setText("en");
-                        break;
-                    case 85872284:
-                    case 85872285: // spanish
-                        classId.setText("es");
-                        break;
-                    case 85872107: // diffeq
-                        classId.setText("df");
-                        break;
-                    case 85872108: // linalg
-                        classId.setText("ln");
-                        break;
-                    case 85872029:
-                    case 85872030: // physics
-                        classId.setText("ph");
-                        break;
-                    case 85871949:
-                    case 85871950: // history
-                        classId.setText("uh");
-                        break;
-                    case 85872151: // multi
-                        classId.setText("mv");
-                        break;
-                    case 85872109: // pde
-                        classId.setText("pd");
-                        break;
-                    default:
-                        classId.setText("??");
-                }
+                String text = classes.containsKey(a.section_id) ?
+                    classes.get(a.section_id) :
+                    classes.containsKey(a.section_id + 1) ?
+                    classes.get(a.section_id + 1) : "??";
+                classId.setText(text.substring(text.length() - 2));
                 classId.setTypeface(Typeface.MONOSPACE, Typeface.NORMAL);
                 tr.addView(classId);
 
