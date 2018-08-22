@@ -49,6 +49,8 @@ public class MainActivity extends Activity
     String creds;
     HashMap<Integer, String> classes;
 
+    public String token;
+
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -91,7 +93,7 @@ public class MainActivity extends Activity
         Pattern p = Pattern.compile("__Ajax.*value=\"([^\"]+)");
         Matcher m = p.matcher(Net.doGET("https://sjs.myschoolapp.com/app"));
         if (m.find()) {
-            String token = m.group(1);
+            token = m.group(1);
             String postdata = Net.doPOST("https://sjs.myschoolapp.com/api/SignIn", "{\"From\":\"\"," + creds + ",\"remember\":true,\"InterfaceSource\":\"WebApp\"}", token);
             if (!postdata.contains("LoginSuccessful\":true")) {
                 SharedPreferences prefs = getSharedPreferences("data", 0);
@@ -206,7 +208,7 @@ public class MainActivity extends Activity
                 tr.addView(due);
 
                 StatusButton sb = new StatusButton(MainActivity.this,
-                        a.assignment_index_id, a.assignment_status);
+                        a.assignment_index_id, a.assignment_status, token);
                 tr.addView(sb);
 
                 tl.addView(tr);

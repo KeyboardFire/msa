@@ -13,13 +13,15 @@ public class StatusButton extends AppCompatTextView {
 
     int id, status;
     static int size;
+    String token;
 
-    public StatusButton(Context context, int id, int status) {
+    public StatusButton(Context context, int id, int status, String token) {
         super(context);
         this.id = id;
         setGravity(Gravity.CENTER);
         setStatus(status, false);
         size = getResources().getDimensionPixelSize(R.dimen.buttonsize);
+        this.token = token;
     }
 
     private void setStatus(int status, boolean updateServer) {
@@ -59,7 +61,7 @@ public class StatusButton extends AppCompatTextView {
 
         @Override protected Void doInBackground(Integer... vals) {
             int id = vals[0], status = vals[1];
-            Net.doPOST("https://sjs.myschoolapp.com/api/assignment2/assignmentstatusupdate?format=json&assigngmentIndexId=" + id + "&assignmentStatus=" + status, "{\"assignmentIndexId\":" + id + ",\"assignmentStatus\":" + status + "}");
+            Net.doPOST("https://sjs.myschoolapp.com/api/assignment2/assignmentstatusupdate?format=json&assignmentIndexId=" + id + "&assignmentStatus=" + status, "{\"assignmentIndexId\":" + id + ",\"assignmentStatus\":" + status + ",\"userTaskInd\":false}", token);
             return null;
         }
 

@@ -100,7 +100,7 @@ public class ClassesActivity extends Activity {
 
         @Override protected ClassData[] doInBackground(Void... underscore) {
             // !!! CHANGE THESE NEXT YEAR !!!
-            return MainActivity.gson.fromJson(Net.doGET("https://sjs.myschoolapp.com/api/datadirect/ParentStudentUserAcademicGroupsGet?userId=" + userid + "&schoolYearLabel=2017+-+2018&memberLevel=3&persona=2&durationList=79421,79422&markingPeriodId="), ClassData[].class);
+            return MainActivity.gson.fromJson(Net.doGET("https://sjs.myschoolapp.com/api/datadirect/ParentStudentUserAcademicGroupsGet?userId=" + userid + "&schoolYearLabel=2018+-+2019&memberLevel=3&persona=2&durationList=95332,95333&markingPeriodId="), ClassData[].class);
         }
 
         @Override protected void onPostExecute(ClassData[] classData) {
